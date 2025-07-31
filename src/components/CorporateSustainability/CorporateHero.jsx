@@ -1,0 +1,77 @@
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { fadeIn } from '../../variants';
+
+const CorporateHero = () => {
+  const [corporateData, setCorporateData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('https://dev.pandgholding.binary-group.com/admin/api/corporate_one');
+        if (!response.ok) {
+          throw new Error('Failed to fetch data');
+        }
+        const data = await response.json();
+        if (data.length > 0) {
+          setCorporateData(data[0]);
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) return <div className="text-center py-20"></div>;
+  if (error) return <div className="text-center py-20 text-red-500">Error: {error}</div>;
+  if (!corporateData) return <div className="text-center py-20">No data available</div>;
+
+  return (
+    <div className="bg-white text-black flex justify-center p-4">
+      <div className="flex flex-col-reverse md:flex-row justify-between items-center max-w-7xl w-full mt-10 gap-10">
+        
+        {/* Text Section */}
+        <motion.div
+          variants={fadeIn("right", 0.2)}
+          initial={{...fadeIn("right",0.2).hidden, opacity:1, scale:0.5}}
+          whileInView="show"
+          viewport={{ once: false, amount: 0.1 }}
+          className="flex flex-col justify-between w-full md:w-1/2 h-auto px-3"
+        >
+          <div>
+            <h1 className="text-4xl lg:text-5xl font-bold leading-tight">
+              {corporateData.title}
+            </h1>
+            <div 
+              className="mt-6 text-base lg:text-lg text-gray-700"
+              dangerouslySetInnerHTML={{ __html: corporateData.description }} 
+            />
+          </div>
+        </motion.div>
+
+        {/* Image Section */}
+        <motion.div
+          variants={fadeIn("left", 0.2)}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: false, amount: 0.1 }}
+          className="w-full md:w-1/2 px-3"
+        >
+          <img
+            src={`https://dev.pandgholding.binary-group.com/admin/${corporateData.photo}`}
+            alt={corporateData.title}
+            className="w-full h-full rounded-[24px] object-cover"
+          />
+        </motion.div>
+      </div>
+    </div>
+  );
+};
+
+export default CorporateHero;
